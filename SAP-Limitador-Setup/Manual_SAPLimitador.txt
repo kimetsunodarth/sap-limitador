@@ -1,0 +1,85 @@
+Manual de Instalação e Utilização – SAPLimitador
+------------------------------------------------
+
+Nome do Serviço
+---------------
+SAPLimitador
+
+Objetivo
+--------
+Este serviço é responsável por limitar a quantidade de instâncias do SAP Business One em execução por usuário,
+evitando que múltiplas janelas sejam abertas simultaneamente.
+
+Por padrão, o limite é de 1 instância. Em caso de infração, o sistema derruba as aplicações SAP do usuário, limpa o seu cache e desloga sua sessão do Windows.
+
+Requisitos
+----------
+- Sistema operacional: Windows 10/11 ou Windows Server
+- Permissões de administrador para instalar o serviço
+- PowerShell instalado (incluso por padrão no Windows)
+
+Instalação
+----------
+1. Execute o instalador `Instalador_SAPLimitador.exe` com permissão de administrador 
+   (clique com o botão direito → "Executar como administrador").
+
+2. O instalador:
+   - Copiará os arquivos para `C:\Program Files\SAP-Limitador`
+   - Criará o serviço do Windows chamado SAPLimitador
+   - Iniciará automaticamente o serviço
+
+Verificação do Serviço
+----------------------
+Após a instalação:
+
+- O serviço SAPLimitador estará visível no Gerenciador de Serviços:
+  - Pressione Win + R, digite `services.msc` e localize SAPLimitador
+  - Verifique se está com o status "Em execução"
+
+Ou use o PowerShell:
+    Get-Service -Name "SAPLimitador"
+
+Comportamento Padrão
+---------------------
+O serviço executa o script `Limitador-SAP.ps1` em segundo plano. Ele monitora continuamente a execução do SAP Business One.
+Ao detectar que um usuário excedeu o limite de instâncias, o serviço inicia um procedimento de limpeza agressivo:
+1. Encerra imediatamente todos os aplicativos SAP do usuário associado (b1s, AddOn, SAPbobsCOM).
+2. Limpa inteiramente o cache da sessão na pasta `%LocalAppData%\SAP` (Woven a partir do Perfil).
+3. Executa um `logoff` forçado da sessão do servidor.
+
+Como alterar o limite de instâncias
+-----------------------------------
+Caso deseje modificar o número de instâncias permitidas:
+
+1. Acesse o diretório de instalação:
+   C:\Program Files\SAP-Limitador
+
+2. Edite o arquivo:
+   Limitador-SAP.ps1
+
+3. Edite o valor da variável $maxInstances no topo do arquivo (ex.: na linha 3) para o novo limite.
+   Exemplo:
+       $maxInstances = 2
+
+4. Salve o arquivo e reinicie o serviço para aplicar as mudanças:
+
+   Pelo PowerShell:
+       Restart-Service -Name "SAPLimitador"
+
+   Ou via services.msc
+
+Desinstalação
+-------------
+Para remover o SAPLimitador:
+
+1. Acesse Painel de Controle → Programas e Recursos
+2. Localize SAPLimitador e clique em Desinstalar
+3. Isso irá:
+   - Remover os arquivos de `C:\Program Files\SAP-Limitador`
+   - Remover o serviço do Windows
+
+-------------
+
+DESENVOLVIDO POR: João Melo e Rodolfo Combinato
+DATA: 24/03/2026
+VERSÃO: 1.1.0
