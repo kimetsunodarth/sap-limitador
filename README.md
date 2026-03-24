@@ -5,10 +5,10 @@ Um serviço de segundo plano desenvolvido em PowerShell para monitorar e limitar
 ## Funcionalidades
 - Monitoramento contínuo das instâncias do processo `SAP Business One` via WMI.
 - Limite de abertura flexível (Padrão: **1 instância**).
-- Ao detectar violação do limite (ex: abertura acidental de segundo SAP), o script atua de forma rigorosa para limpar a sessão que pode estar travando:
-  1. Encerra agressivamente todos os processos correlatos (`SAP Business One.exe`, `b1s.exe`, `AddOn*`, `SBO*`) abertos **exclusivamente** pelo usuário infrator.
-  2. Resolve o perfil do usuário e esvazia sua pasta pessoal de cache e logs do SAP (`%LocalAppData%\SAP`).
-  3. Realiza o `logoff` forçado da sessão local/remota do Windows do usuário para liberar os recursos do servidor inequivocadamente.
+- Ao detectar violação do limite (ex: abertura acidental de segundo SAP), o script atua de forma cirurgica e agressiva para limpar a sessão travada:
+  1. Encerra na hora todos os processos correlatos (`SAP Business One.exe`, `b1s.exe`, `AddOn*`, `SBO*`) abertos **exclusivamente** na Sessão (Session ID RDP) pelo usuário infrator (Get-Process native call).
+  2. Preserva integralmente a pasta pessoal de cache e AppData do usuário (nenhum arquivo é corrompido ou apagado pós-logoff).
+  3. Realiza o `logoff` acompanhado da destruição física (Reset WinStation - `rwinsta`) da sessão RDP do Windows para liberar os recursos do servidor e impedir que a sessão fique como "Desconectada".
 
 ## Instalação
 1. Execute o setup automatizado `.exe` gerado pelo projeto.

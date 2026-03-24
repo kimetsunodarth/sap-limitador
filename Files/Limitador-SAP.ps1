@@ -47,26 +47,12 @@ while ($true) {
                     # 3. Logoff OBRIGATÓRIO da Sessão RDP
                     Write-Host "Forcando logoff RDP Terminal Server 2019 na sessao $sess..."
                     & logoff $sess
+                    Start-Sleep -Seconds 1
+                    & rwinsta $sess # Remove fisicamente sessões que teimam em ficar "Desconectadas"
                 }
-        
-                # 2. Limpar Cache local (perfil limpo)
-                if ($user -match "\\") {
-                    $domain = $user.Split("\")[0]
-                    $username = $user.Split("\")[1]
-                    Write-Host "Limpando LocalAppData\SAP para o perfil de: $username..."
-                    try {
-                        $objUser = New-Object System.Security.Principal.NTAccount($domain, $username)
-                        $sid = $objUser.Translate([System.Security.Principal.SecurityIdentifier]).Value
-                        $profilePath = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid" -ErrorAction Stop).ProfileImagePath
-                        $sapFolder = "$profilePath\AppData\Local\SAP"
-                        if (Test-Path $sapFolder) {
-                            Remove-Item -Path "$sapFolder\*" -Recurse -Force -ErrorAction SilentlyContinue
-                            Write-Host "O cache do SAP foi excluido/esvaziado com sucesso!"
-                        }
-                    } catch {
-                        Write-Host "Erro inesperado ao limpar o cache: $($_.Exception.Message)"
-                    }
-                }
+
+                # Cache cleanup REMOVIDO a pedido do usuario. 
+                # (Nenhum item do AppData sera apagado).
             }
         }
     }
